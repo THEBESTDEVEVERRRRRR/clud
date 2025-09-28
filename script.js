@@ -1013,7 +1013,7 @@ function showPaymentModal(plan) {
         
         const amount = plan.amount;
         const encodedAmount = base64Encode(amount.toString());
-        const url = 'aHR0cHM6Ly9yZWltYWdpbmVkLWZpc2hzdGljay13cng3dzc5Z3B3Z3FoZzY2NS01NTAwLmFwcC5naXRodWIuZGV2L3N1Y2Nlc2Z1bHBheW1lbnQuaHRtbA==';
+        const url = 'aHR0cHM6Ly9jbG91ZC50dXNoLm15LmlkL3N1Y2Nlc2Z1bHBheW1lbnQ=';
         
         // Redirect to payment page
         console.log('Redirecting to payment page...');

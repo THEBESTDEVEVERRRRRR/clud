@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Details - CloudCompute Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .usage-section {
+            padding: 2rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .usage-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .usage-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        .usage-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+        .usage-subtitle {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .chart-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+        .detail-value {
+            color: #0f172a;
+            font-weight: 600;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-warning {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .metric-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .server-tooltip {
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+        .detail-row {
+            position: relative;
+        }
+        .detail-row:hover .server-tooltip {
+            display: block !important;
+        }
+        .tooltip-metrics {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .tooltip-metrics div {
+            margin-bottom: 0.5rem;
+        }
+        .tooltip-metrics .high {
+            color: #dc2626;
+        }
+        .tooltip-metrics .medium {
+            color: #d97706;
+        }
+        .tooltip-metrics .low {
+            color: #059669;
+        }
+    </style>
+    <script>
+        // Function to generate random metrics
+        function generateMetrics() {
+            return {
+                cpu: Math.floor(Math.random() * 100),
+                ram: Math.floor(Math.random() * 100),
+                network: Math.floor(Math.random() * 1000),
+                diskRead: Math.floor(Math.random() * 500),
+                diskWrite: Math.floor(Math.random() * 300),
+                iops: Math.floor(Math.random() * 5000),
+                processes: Math.floor(Math.random() * 200) + 50
+            };
+        }
+
+        // Function to update metrics for a server
+        function updateServerMetrics(serverId) {
+            const metrics = generateMetrics();
+            const row = document.querySelector(`[data-server-id="${serverId}"]`).closest('.detail-row');
+            
+            if (!row) return;
+            
+            // Update CPU
+            const cpuElement = row.querySelector('.cpu-usage');
+            const cpuBar = row.querySelector('.cpu-bar div');
+            if (cpuElement && cpuBar) {
+                cpuElement.textContent = `${metrics.cpu}%`;
+                cpuBar.style.width = `${metrics.cpu}%`;
+            }
+            
+            // Update RAM
+            const ramElement = row.querySelector('.ram-usage');
+            const ramBar = row.querySelector('.ram-bar div');
+            if (ramElement && ramBar) {
+                ramElement.textContent = `${metrics.ram}%`;
+                ramBar.style.width = `${metrics.ram}%`;
+            }
+            
+            // Update Network
+            const networkElement = row.querySelector('.network-transfer span');
+            if (networkElement) {
+                networkElement.textContent = `${metrics.network} MB/s`;
+            }
+            
+            // Update tooltip content
+            const tooltipMetrics = row.querySelector('.tooltip-metrics');
+            if (tooltipMetrics) {
+                tooltipMetrics.innerHTML = `
+                    <div>Processes: ${metrics.processes}</div>
+                    <div>Disk I/O: ${metrics.diskRead} MB/s read, ${metrics.diskWrite} MB/s write</div>
+                    <div>IOPS: ${metrics.iops}</div>
+                    <div class="${metrics.cpu > 80 ? 'high' : metrics.cpu > 60 ? 'medium' : 'low'}">
+                        CPU Load: ${metrics.cpu}% (${Math.floor(metrics.cpu * 0.8)}% user, ${Math.floor(metrics.cpu * 0.2)}% system)
+                    </div>
+                    <div class="${metrics.ram > 80 ? 'high' : metrics.ram > 60 ? 'medium' : 'low'}">
+                        Memory Usage: ${metrics.ram}% (${Math.floor(metrics.ram * 64 / 100)} GB used)
+                    </div>
+                    <div>Network I/O: ${metrics.network} MB/s</div>
+                `;
+            }
+        }
+
+        // Update metrics every 2 seconds for each server
+        setInterval(() => {
+            document.querySelectorAll('[data-server-id]').forEach(element => {
+                const serverId = element.getAttribute('data-server-id');
+                if (serverId) {
+                    updateServerMetrics(serverId);
+                }
+            });
+        }, 2000);
+
+        // Improved tooltip handling for all servers
+        function initializeTooltips() {
+            const serverList = document.getElementById('server-list');
+            
+            if (serverList) {
+                // Use event delegation on the server list container
+                serverList.addEventListener('mouseenter', (e) => {
+                    const row = e.target.closest('.detail-row');
+                    if (row) {
+                        const tooltip = row.querySelector('.server-tooltip');
+                        if (tooltip) {
+                            tooltip.style.display = 'block';
+                        }
+                    }
+                }, true);
+
+                serverList.addEventListener('mouseleave', (e) => {
+                    const row = e.target.closest('.detail-row');
+                    if (row) {
+                        const tooltip = row.querySelector('.server-tooltip');
+                        if (tooltip) {
+                            tooltip.style.display = 'none';
+                        }
+                    }
+                }, true);
+
+                // Position tooltip on mousemove
+                serverList.addEventListener('mousemove', (e) => {
+                    const row = e.target.closest('.detail-row');
+                    if (row) {
+                        const tooltip = row.querySelector('.server-tooltip');
+                        if (tooltip && tooltip.style.display === 'block') {
+                            const rect = row.getBoundingClientRect();
+                            const tooltipRect = tooltip.getBoundingClientRect();
+                            
+                            // Calculate position relative to the viewport
+                            let left = e.clientX + 20;
+                            let top = e.clientY - 10;
+                            
+                            // Prevent tooltip from going off-screen
+                            if (left + tooltipRect.width > window.innerWidth) {
+                                left = e.clientX - tooltipRect.width - 20;
+                            }
+                            if (top < 0) {
+                                top = e.clientY + 20;
+                            }
+                            if (top + tooltipRect.height > window.innerHeight) {
+                                top = e.clientY - tooltipRect.height - 20;
+                            }
+                            
+                            tooltip.style.position = 'fixed';
+                            tooltip.style.left = `${left}px`;
+                            tooltip.style.top = `${top}px`;
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize tooltips when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializeTooltips);
+    </script>
+    <script type="module">
+        import { app, auth, db } from './script.js';
+        import { ref, onValue } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js';
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
+
+        // Handle sign out
+        document.getElementById('sign-in').addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                window.location.href = 'sign-in.html';
+            });
+        });
+
+        // Check authentication
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'sign-in.html';
+                return;
+            }
+
+            // Get real server data and initialize usage display
+            const ordersRef = ref(db, 'orders');
+            onValue(ordersRef, (snapshot) => {
+                const data = snapshot.val();
+                let activeServers = 0;
+                let totalCost = 0;
+                let servers = [];
+
+                if (data) {
+                    Object.values(data).forEach(order => {
+                        if (order.userId === user.uid) {
+                            activeServers++;
+                            const orderAmount = order.amount || order.price || 0;
+                            totalCost += parseFloat(orderAmount);
+                            
+                            // Map location codes to display names
+                            const locationMap = {
+                                // Custom config locations (exactly as they appear in the data)
+                                'Central Europe': 'Europe - Central',
+                                'East Asia': 'Asia - East',
+                                'United States - East Coast': 'United States - East Coast',
+                                'United States - West Coast': 'United States - West Coast',
+                                'south-africa': 'South Africa',
+                                
+                                // Preconfigured server locations
+                                'us-east': 'United States - East Coast',
+                                'us-west': 'United States - West Coast',
+                                'eu-central': 'Europe - Central',
+                                'eu-west': 'Europe - West',
+                                'asia-east': 'Asia - East',
+                                'asia-southeast': 'Asia - Southeast',
+                                
+                                // Default/Random locations
+                                'random': 'Random Location (Free)',
+                                'Random Location': 'Random Location (Free)'
+                            };
+
+                            // Detailed logging of the entire order
+                            console.log('Full order data:', JSON.stringify(order, null, 2));
+                            
+                            // Get location from either direct location field or config
+                            const configLocation = order.config?.region?.text;
+                            const directLocation = order.location;
+                            
+                            // Use the first available location or default to random
+                            const locationKey = configLocation || directLocation || 'random';
+                            const serverLocation = locationMap[locationKey] || 'Random Location (Free)';
+                            
+                            console.log('Location determination:', {
+                                configLocation,
+                                directLocation,
+                                locationKey,
+                                finalLocation: serverLocation
+                            });
+
+                            // Create a server entry with real name, cost, and location but randomized metrics
+                            servers.push({
+                                name: order.name || `Server #${activeServers}`,
+                                type: order.type || "Standard Server",
+                                status: "Active",
+                                uptime: calculateUptime(order.createdAtLocal),
+                                cpu: Math.floor(Math.random() * 85) + 15, // 15-100%
+                                memory: Math.floor(Math.random() * 75) + 25, // 25-100%
+                                storage: Math.floor(Math.random() * 90) + 10, // 10-100%
+                                network: calculateNetworkTransfer(order.createdAtLocal), // 1GB per 10 minutes
+                                location: serverLocation || locationMap['random'],
+                                cost: orderAmount
+                            });
+                        }
+                    });
+                }
+
+                initializeUsageData(servers, activeServers, totalCost);
+            });
+        });
+
+        function calculateNetworkTransfer(createdAtLocal) {
+            if (!createdAtLocal) return 0;
+            
+            const created = new Date(createdAtLocal);
+            const now = new Date();
+            const diffMs = now - created;
+            const diffMinutes = diffMs / (1000 * 60);
+            
+            // Calculate GB based on 1GB per 10 minutes
+            const gb = Math.floor(diffMinutes / 10);
+            return Math.max(1, gb); // Minimum 1GB
+        }
+
+        function calculateUptime(createdAtLocal) {
+            if (!createdAtLocal) return "Unknown";
+            
+            const created = new Date(createdAtLocal);
+            const now = new Date();
+            const diffMs = now - created;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            if (diffDays === 0) {
+                if (diffHours === 0) {
+                    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    return `${diffMinutes} minutes`;
+                }
+                return `${diffHours} hours`;
+            }
+            return `${diffDays} days, ${diffHours} hours`;
+        }
+
+        function initializeUsageData(servers, activeServers, totalCost) {
+    // Update server list with usage info
+    const serverList = document.getElementById('server-list');
+    serverList.innerHTML = ''; // Clear existing entries
+    
+    servers.forEach((server, index) => {
+        const serverId = `server-${index}-${Date.now()}`; // Generate unique ID
+        const row = document.createElement('div');
+        row.className = 'detail-row';
+        row.innerHTML = `
+            <div style="flex: 2" class="server-info" data-server-id="${serverId}">
+                <div style="font-weight:600;color:#0f172a;margin-bottom:0.25rem;">${server.name}</div>
+                <div style="font-size:0.875rem;color:#64748b;">${server.type} • ${server.location}</div>
+            </div>
+            <div style="flex: 2" class="server-metrics" data-server-id="${serverId}">
+                <div class="metric-row">
+                    <span style="color:#64748b">CPU:</span> 
+                    <span style="color:#0f172a;font-weight:500" class="cpu-usage">0%</span>
+                    <div class="metric-bar cpu-bar" style="width:100px;height:4px;background:#e2e8f0;border-radius:2px;margin-left:8px;">
+                        <div style="width:0%;height:100%;background:#3b82f6;border-radius:2px;transition:width 0.5s ease;"></div>
+                    </div>
+                </div>
+                <div class="metric-row" style="margin-top:8px;">
+                    <span style="color:#64748b">RAM:</span> 
+                    <span style="color:#0f172a;font-weight:500" class="ram-usage">0%</span>
+                    <div class="metric-bar ram-bar" style="width:100px;height:4px;background:#e2e8f0;border-radius:2px;margin-left:8px;">
+                        <div style="width:0%;height:100%;background:#10b981;border-radius:2px;transition:width 0.5s ease;"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="flex: 1;text-align:right;">
+                <span class="status-badge status-active">${server.status}</span>
+                <div style="font-size:0.875rem;color:#64748b;margin-top:0.25rem;">${server.uptime}</div>
+                <div class="network-transfer" style="font-size:0.75rem;color:#64748b;margin-top:0.25rem;">
+                    Network: <span>0 MB/s</span>
+                </div>
+            </div>
+            <div class="server-tooltip" style="display:none;position:absolute;background:white;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);padding:1rem;z-index:10;min-width:280px;pointer-events:none;">
+                <div style="font-weight:600;margin-bottom:0.75rem;">Live Metrics</div>
+                <div class="tooltip-metrics"></div>
+            </div>
+        `;
+        serverList.appendChild(row);
+        
+        // Store the server ID for later use
+        server.serverId = serverId;
+    });
+
+    // Update usage statistics with real and simulated data
+    document.getElementById('total-servers').textContent = activeServers;
+    document.getElementById('total-cost').textContent = `$${totalCost.toFixed(2)}/mo`;
+    document.getElementById('avg-cpu').textContent = `${Math.round(servers.reduce((acc, s) => acc + s.cpu, 0) / servers.length || 0)}%`;
+                    const totalNetwork = servers.reduce((acc, s) => acc + s.network, 0);
+        document.getElementById('total-network').textContent = `${totalNetwork.toLocaleString()} GB`;
+        document.getElementById('total-network').title = `Average: ${Math.round(totalNetwork/servers.length)} GB per server`;
+
+    // Initialize CPU usage chart with dynamic data
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    const generateRandomData = () => Array(7).fill(0).map(() => Math.floor(Math.random() * 45) + 35); // 35-80%
+
+    // Update chart every 5 seconds with new random data
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [{
+                label: 'CPU Usage %',
+                data: generateRandomData(),
+                borderColor: '#3b82f6',
+                tension: 0.4,
+                fill: false
+            }, {
+                label: 'Memory Usage %',
+                data: generateRandomData(),
+                borderColor: '#10b981',
+                tension: 0.4,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Resource Usage (24h)'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Update chart data every 5 seconds
+    setInterval(() => {
+        chart.data.datasets[0].data = generateRandomData();
+        chart.data.datasets[1].data = generateRandomData();
+        chart.update();
+    }, 5000);
+}
+    </script>
+</head>
+<body>
+    <!-- Header/Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <div class="nav-brand">
+                <a href="/">
+                    <img src="clud.png" alt="Clud Logo" class="logo" style="height:48px; width:auto;" />
+                </a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li class="nav-item"><a href="usage.html" class="nav-link">Usage</a></li>
+                    <li class="nav-item"><a href="pricing.html" class="nav-link">Pricing</a></li>
+                </ul>
+            </div>
+            <div class="nav-actions">
+                <a href="sign-in.html" class="btn btn-outline" id="sign-in">Sign Out</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Usage Content -->
+    <section class="dashboard-section">
+        <div class="container" style="margin-top:3rem;">
+            <h2 class="section-title" style="margin-bottom:2rem;">Resource Usage</h2>
+            
+            <!-- Usage Overview -->
+            <div class="usage-grid">
+                <div class="usage-card">
+                    <div class="usage-title">Active Servers</div>
+                    <div class="usage-value" id="total-servers">0</div>
+                    <div class="usage-subtitle">Total running instances</div>
+                </div>
+                <div class="usage-card">
+                    <div class="usage-title">Current Cost</div>
+                    <div class="usage-value" id="total-cost">$0/mo</div>
+                    <div class="usage-subtitle">Monthly estimated</div>
+                </div>
+                <div class="usage-card">
+                    <div class="usage-title">Average CPU Usage</div>
+                    <div class="usage-value" id="avg-cpu">0%</div>
+                    <div class="usage-subtitle">Across all servers</div>
+                </div>
+                <div class="usage-card">
+                    <div class="usage-title">Network Transfer</div>
+                    <div class="usage-value" id="total-network">0 GB</div>
+                    <div class="usage-subtitle">Total this month</div>
+                </div>
+            </div>
+
+            <!-- Usage Chart -->
+            <div class="chart-container">
+                <canvas id="usageChart"></canvas>
+            </div>
+
+            <!-- Server Details -->
+            <div class="usage-section" style="margin-top:2rem;">
+                <h3 style="font-size:1.25rem;font-weight:600;margin-bottom:1.5rem;">Server Details</h3>
+                <div id="server-list">
+                    <!-- Server entries will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top:4rem;">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3 class="footer-logo">CloudCompute Pro</h3>
+                    <p class="footer-tagline">Enterprise-grade compute infrastructure for modern applications</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">© 2025 CloudCompute Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

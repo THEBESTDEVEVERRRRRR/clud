@@ -9,25 +9,71 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+        <!-- Theme style adjustments -->
+        <style>
+            /* Button styles */
+            .btn { padding: 10px 20px; font-weight: bold; border-radius: 4px; }
+            .btn-primary { background-color: #007bff; border: none; color: #fff; }
+            .btn-outline { background-color: transparent; border: 2px solid #007bff; color: #007bff; }
+            /* Container style to match website theme */
+            .container { max-width: 1200px; margin: auto; padding: 20px; }
+            /* Improved input styles for auth */
+            .input {
+                width: 100%;
+                padding: 12px 14px;
+                border: 1.5px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 1rem;
+                margin-bottom: 1rem;
+                background: #f9fafb;
+                transition: border 0.2s;
+            }
+            .input:focus {
+                outline: none;
+                border: 1.5px solid #007bff;
+                background: #fff;
+            }
+        </style>
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+            import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+            const firebaseConfig = {
+                apiKey: "AIzaSyA-E-8tOgugt5gZkVDYT4XnQdzY9XhRKaw",
+                authDomain: "clud-d5315.firebaseapp.com",
+                projectId: "clud-d5315",
+                storageBucket: "clud-d5315.firebasestorage.app",
+                messagingSenderId: "953090765245",
+                appId: "1:953090765245:web:008cfc0572335df5f122d4"
+            };
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    window.location.href = "dashboard.html";
+                }
+            });
+        </script>
 </head>
 <body>
     <!-- Header/Navigation -->
     <header class="header">
         <nav class="nav container">
             <div class="nav-brand">
-                <h1 class="logo">CloudCompute Pro</h1>
+                <a href="/">
+                    <img src="clud.png" alt="Clud Logo" class="logo" style="height:48px; width:auto;" />
+                </a>
             </div>
             <div class="nav-menu" id="nav-menu">
                 <ul class="nav-list">
                     <li class="nav-item"><a href="#features" class="nav-link">Features</a></li>
                     <li class="nav-item"><a href="#testimonials" class="nav-link">Testimonials</a></li>
-                    <li class="nav-item"><a href="#pricing" class="nav-link">Pricing</a></li>
+                    <li class="nav-item"><a href="pricing.html" class="nav-link">Pricing</a></li>
                     <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
                 </ul>
             </div>
             <div class="nav-actions">
-                <a href="#pricing" class="btn btn-outline">Sign In</a>
-                <a href="#pricing" class="btn btn-primary">Get Started</a>
+                <a href="#pricing" class="btn btn-outline" id="sign-in">Sign In</a>
+                <a href="#pricing" class="btn btn-primary" id="get-started">Get Started</a>
             </div>
             <div class="nav-toggle" id="nav-toggle">
                 <span></span>
@@ -185,8 +231,7 @@
                     <div class="testimonial-card active">
                         <div class="testimonial-content">
                             <p class="testimonial-text">
-                                "CloudCompute Pro transformed our deployment process. What used to take hours now takes minutes. 
-                                The auto-scaling feature saved us during our product launch when traffic increased by 500%."
+                                "Security was our top priority, and CloudCompute delivered. Their encryption and compliance tools gave us peace of mind from day one. We've had zero breaches and total confidence in our data protection."
                             </p>
                         </div>
                         <div class="testimonial-author">
@@ -195,15 +240,14 @@
                                  class="author-avatar">
                             <div class="author-info">
                                 <h4 class="author-name">Sarah Chen</h4>
-                                <p class="author-role">CTO, TechFlow Inc</p>
+                                <p class="author-role">CTO, Tush Bank Co Ltd</p>
                             </div>
                         </div>
                     </div>
                     <div class="testimonial-card">
                         <div class="testimonial-content">
                             <p class="testimonial-text">
-                                "The reliability is outstanding. We've had 100% uptime for 18 months straight. 
-                                Their support team is incredibly responsive and knowledgeable. Best investment we've made."
+                                "As an AI startup, our models demand serious compute power—and CloudCompute delivers. Their high-performance server GPUs let us train faster, iterate quicker, and scale effortlessly. It's like having a supercomputer on tap, without the overhead."
                             </p>
                         </div>
                         <div class="testimonial-author">
@@ -212,15 +256,14 @@
                                  class="author-avatar">
                             <div class="author-info">
                                 <h4 class="author-name">Michael Rodriguez</h4>
-                                <p class="author-role">Lead Developer, DataViz Solutions</p>
+                                <p class="author-role">Lead Developer, Tush AI</p>
                             </div>
                         </div>
                     </div>
                     <div class="testimonial-card">
                         <div class="testimonial-content">
                             <p class="testimonial-text">
-                                "Migrating to CloudCompute Pro was seamless. The cost savings are significant compared to our 
-                                previous provider, and the performance improvements are immediately noticeable to our users."
+                                "I use CloudCompute to host my website and manage some personal projects, and I’ve been really impressed. The servers are fast—pages load instantly—and I’ve never experienced any downtime. It just works, every time. Super reliable and hassle-free."
                             </p>
                         </div>
                         <div class="testimonial-author">
@@ -243,555 +286,17 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section class="pricing" id="pricing">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Powerful Server Specifications</h2>
-                <p class="section-description">
-                    Choose from our range of high-performance CPU, GPU, RDP/VM, and Storage servers
-                </p>
-            </div>
-            
-            <div class="spec-selector-wrapper">
-                <!-- Featured Server Options -->
-                <div class="featured-specs">
-                    <h3 class="featured-title">Popular Server Configurations</h3>
-                    <div class="featured-grid">
-                        <!-- Starter Option -->
-                        <div class="featured-spec-card" data-value="5" data-type="cpu">
-                            <div class="spec-badge">Most Popular</div>
-                            <div class="spec-icon">🖥️</div>
-                            <h4 class="spec-title">Mini CPU Server</h4>
-                            <div class="spec-price-large">$5<span class="period">/month</span></div>
-                            <div class="spec-highlights">
-                                <div class="highlight">8 CPU Cores</div>
-                                <div class="highlight">16GB RAM</div>
-                                <div class="highlight">1TB SSD</div>
-                                <div class="highlight">AMD EPYC 9965</div>
-                            </div>
-                            <button class="btn btn-primary btn-full select-spec-btn">Select This Server</button>
-                        </div>
-                        
-                        <!-- Professional Option -->
-                        <div class="featured-spec-card" data-value="25" data-type="gpu">
-                            <div class="spec-badge pro-badge">Best Value</div>
-                            <div class="spec-icon">🚀</div>
-                            <h4 class="spec-title">Standard GPU Server</h4>
-                            <div class="spec-price-large">$25<span class="period">/month</span></div>
-                            <div class="spec-highlights">
-                                <div class="highlight">Nvidia L40</div>
-                                <div class="highlight">4 vCPU</div>
-                                <div class="highlight">64GB RAM</div>
-                                <div class="highlight">48GB VRAM</div>
-                            </div>
-                            <button class="btn btn-primary btn-full select-spec-btn">Select This Server</button>
-                        </div>
-                        
-                        <!-- Enterprise Option -->
-                        <div class="featured-spec-card" data-value="100" data-type="rdp">
-                            <div class="spec-badge enterprise-badge">Enterprise</div>
-                            <div class="spec-icon">⚡</div>
-                            <h4 class="spec-title">Premium RDP Server</h4>
-                            <div class="spec-price-large">$100<span class="period">/month</span></div>
-                            <div class="spec-highlights">
-                                <div class="highlight">RTX 4080 Super</div>
-                                <div class="highlight">Ryzen 9 9950X3D</div>
-                                <div class="highlight">64GB DDR5</div>
-                                <div class="highlight">Low Latency Network</div>
-                            </div>
-                            <button class="btn btn-primary btn-full select-spec-btn">Select This Server</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Show More Dropdown -->
-                <div class="more-options-section">
-                    <button class="show-more-toggle" id="show-more-toggle">
-                        <span class="toggle-text">Show All Server Options</span>
-                        <span class="toggle-icon">▼</span>
-                        <span class="option-count">(17+ more configurations)</span>
-                    </button>
-                    
-                    <div class="additional-options" id="additional-options">
-                        <div class="options-grid">
-                            <!-- CPU Servers -->
-                            <div class="option-category">
-                                <h4 class="category-title">CPU Servers</h4>
-                                <div class="category-options">
-                                    <div class="option-card" data-value="1" data-type="cpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Micro CPU</span>
-                                            <span class="option-price">$1/month</span>
-                                        </div>
-                                        <div class="option-specs">4 cores • 8GB RAM • 512GB SSD</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="10" data-type="cpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Basic CPU</span>
-                                            <span class="option-price">$10/month</span>
-                                        </div>
-                                        <div class="option-specs">16 cores • 32GB RAM • 1TB SSD</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="20" data-type="cpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Standard CPU</span>
-                                            <span class="option-price">$20/month</span>
-                                        </div>
-                                        <div class="option-specs">24 cores • 64GB RAM • 2TB SSD</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="40" data-type="cpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Premium CPU</span>
-                                            <span class="option-price">$40/month</span>
-                                        </div>
-                                        <div class="option-specs">64 cores • 128GB RAM • 4TB SSD</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- GPU Servers -->
-                            <div class="option-category">
-                                <h4 class="category-title">GPU Servers</h4>
-                                <div class="category-options">
-                                    <div class="option-card" data-value="15" data-type="gpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Basic GPU</span>
-                                            <span class="option-price">$15/month</span>
-                                        </div>
-                                        <div class="option-specs">Nvidia A100 • 32GB RAM • 40GB VRAM</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="50" data-type="gpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Pro GPU</span>
-                                            <span class="option-price">$50/month</span>
-                                        </div>
-                                        <div class="option-specs">Nvidia H100 • 128GB RAM • 96GB VRAM</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="100" data-type="gpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Premium GPU</span>
-                                            <span class="option-price">$100/month</span>
-                                        </div>
-                                        <div class="option-specs">Nvidia H200 • 256GB RAM • 141GB VRAM</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="150" data-type="gpu">
-                                        <div class="option-header">
-                                            <span class="option-name">Ultra GPU</span>
-                                            <span class="option-price">$150/month</span>
-                                        </div>
-                                        <div class="option-specs">Nvidia B200 • 256GB RAM • 180GB VRAM</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- RDP/VM Servers -->
-                            <div class="option-category">
-                                <h4 class="category-title">RDP/VM Servers</h4>
-                                <div class="category-options">
-                                    <div class="option-card" data-value="30" data-type="rdp">
-                                        <div class="option-header">
-                                            <span class="option-name">Basic RDP</span>
-                                            <span class="option-price">$30/month</span>
-                                        </div>
-                                        <div class="option-specs">RTX 3060 • Core 5 220H • 16GB DDR5</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="50" data-type="rdp">
-                                        <div class="option-header">
-                                            <span class="option-name">Standard RDP</span>
-                                            <span class="option-price">$50/month</span>
-                                        </div>
-                                        <div class="option-specs">RX 9070 XT • Ryzen 7 8700F • 32GB DDR5</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="175" data-type="rdp">
-                                        <div class="option-header">
-                                            <span class="option-name">Ultra RDP</span>
-                                            <span class="option-price">$175/month</span>
-                                        </div>
-                                        <div class="option-specs">RTX 5090 • Threadripper PRO • 128GB DDR5</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Storage Servers -->
-                            <div class="option-category">
-                                <h4 class="category-title">Storage Servers</h4>
-                                <div class="category-options">
-                                    <div class="option-card" data-value="25" data-type="storage">
-                                        <div class="option-header">
-                                            <span class="option-name">Basic Storage</span>
-                                            <span class="option-price">$25/month</span>
-                                        </div>
-                                        <div class="option-specs">16TB SSD • 2 vCPU • 16GB RAM</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="50" data-type="storage">
-                                        <div class="option-header">
-                                            <span class="option-name">Standard Storage</span>
-                                            <span class="option-price">$50/month</span>
-                                        </div>
-                                        <div class="option-specs">32TB SSD • 4 vCPU • 32GB RAM</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="75" data-type="storage">
-                                        <div class="option-header">
-                                            <span class="option-name">Premium Storage</span>
-                                            <span class="option-price">$75/month</span>
-                                        </div>
-                                        <div class="option-specs">64TB SSD • 8 vCPU • 64GB RAM</div>
-                                    </div>
-                                    
-                                    <div class="option-card" data-value="100" data-type="storage">
-                                        <div class="option-header">
-                                            <span class="option-name">Ultra Storage</span>
-                                            <span class="option-price">$100/month</span>
-                                        </div>
-                                        <div class="option-specs">128TB SSD • 16 vCPU • 128GB RAM</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="selected-spec-display" id="selected-spec">
-                    <div class="no-selection">
-                        <h3>Select a server configuration above</h3>
-                        <p>Choose from our featured options or explore all available server configurations to see detailed specifications and pricing.</p>
-                    </div>
-                </div>
-                
-                <div class="pricing-actions">
-                    <a href="#contact" class="btn btn-primary btn-large">Deploy Selected Server</a>
-                    <a href="#contact" class="btn btn-outline btn-large">Get Custom Quote</a>
-                </div>
-                
-                <!-- Custom Configuration Section -->
-                <div class="custom-config-section">
-                    <div class="config-divider">
-                        <span class="divider-text">OR</span>
-                    </div>
-                    
-                    <div class="custom-config-card">
-                        <div class="config-header">
-                            <h3 class="config-title">Build Your Custom Configuration</h3>
-                            <p class="config-description">
-                                Configure your server exactly as you need it. Select each component individually for maximum flexibility.
-                            </p>
-                        </div>
-                        
-                        <div class="config-toggle">
-                            <button class="config-toggle-btn" id="custom-config-toggle">
-                                <span class="toggle-text">Show Custom Configuration</span>
-                                <span class="toggle-icon">⚙️</span>
-                            </button>
-                        </div>
-                        
-                        <div class="custom-config-panel" id="custom-config-panel">
-                            <div class="config-grid">
-                                <!-- CPU Configuration -->
-                                <div class="config-option">
-                                    <label class="config-label">CPU Specification</label>
-                                    <div class="custom-select" id="cpu-config">
-                                        <div class="select-selected" data-value="0">Select CPU Specs</div>
-                                        <div class="select-items">
-                                            <div class="spec-category">vCPU (Shared)</div>
-                                            <div data-value="2">2 vCPU Core - $2/month
-                                                <div class="config-description">Random server CPU according to availability (Unreserved)</div>
-                                            </div>
-                                            <div data-value="4">4 vCPU Core - $4/month
-                                                <div class="config-description">Random server CPU according to availability (Unreserved)</div>
-                                            </div>
-                                            <div data-value="8">8 vCPU Core - $8/month
-                                                <div class="config-description">Random server CPU according to availability (Unreserved)</div>
-                                            </div>
-                                            <div data-value="16">16 vCPU Core - $16/month
-                                                <div class="config-description">Random server CPU according to availability (Unreserved)</div>
-                                            </div>
-                                            <div data-value="32">32 vCPU Core - $32/month
-                                                <div class="config-description">Random server CPU according to availability (Unreserved)</div>
-                                            </div>
-                                            
-                                            <div class="spec-category">AMD EPYC 9965</div>
-                                            <div data-value="4">2 CPU Core - $4/month
-                                                <div class="config-description">Dedicated AMD EPYC 9965 cores</div>
-                                            </div>
-                                            <div data-value="8">4 CPU Core - $8/month
-                                                <div class="config-description">Dedicated AMD EPYC 9965 cores</div>
-                                            </div>
-                                            <div data-value="16">8 CPU Core - $16/month
-                                                <div class="config-description">Dedicated AMD EPYC 9965 cores</div>
-                                            </div>
-                                            <div data-value="32">16 CPU Core - $32/month
-                                                <div class="config-description">Dedicated AMD EPYC 9965 cores</div>
-                                            </div>
-                                            <div data-value="200">196 CPU Core - $200/month
-                                                <div class="config-description">One complete AMD EPYC 9965 processor</div>
-                                            </div>
-                                            
-                                            <div class="spec-category">High Performance CPUs</div>
-                                            <div data-value="50">Core i9-14900KS - $50/month
-                                                <div class="config-description">Complete Intel Core i9-14900KS processor</div>
-                                            </div>
-                                            <div data-value="50">Ryzen 9 9950X3D - $50/month
-                                                <div class="config-description">Complete AMD Ryzen 9 9950X3D processor</div>
-                                            </div>
-                                            <div data-value="100">Threadripper PRO 7995WX - $100/month
-                                                <div class="config-description">Complete AMD Threadripper PRO workstation processor</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- RAM Configuration -->
-                                <div class="config-option">
-                                    <label class="config-label">Memory (RAM)</label>
-                                    <div class="custom-select" id="ram-config">
-                                        <div class="select-selected" data-value="0">Select RAM</div>
-                                        <div class="select-items">
-                                            <div data-value="0">1GB - $1/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                            <div data-value="4">4GB - $4/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                            <div data-value="8">8GB - $8/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                            <div data-value="16">16GB - $16/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                            <div data-value="32">32GB - $32/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                            <div data-value="64">64GB - $64/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                            <div data-value="128">128GB - $128/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                            <div data-value="256">256GB - $256/month
-                                                <div class="config-description">DDR5 High Speed RAM</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Storage Configuration -->
-                                <div class="config-option">
-                                    <label class="config-label">Storage</label>
-                                    <div class="custom-select" id="storage-config">
-                                        <div class="select-selected" data-value="0">Select Storage</div>
-                                        <div class="select-items">
-                                            <div class="spec-category">HDD (Cost Efficient)</div>
-                                            <div data-value="0">256GB - Free
-                                                <div class="config-description">Traditional hard drive storage</div>
-                                            </div>
-                                            <div data-value="4">512GB - $4/month
-                                                <div class="config-description">Traditional hard drive storage</div>
-                                            </div>
-                                            <div data-value="8">1TB - $8/month
-                                                <div class="config-description">Traditional hard drive storage</div>
-                                            </div>
-                                            <div data-value="16">4TB - $16/month
-                                                <div class="config-description">Traditional hard drive storage</div>
-                                            </div>
-                                            <div data-value="24">16TB - $24/month
-                                                <div class="config-description">Traditional hard drive storage</div>
-                                            </div>
-                                            
-                                            <div class="spec-category">SSD (High Performance)</div>
-                                            <div data-value="2">256GB - $2/month
-                                                <div class="config-description">Solid State Drive for faster performance</div>
-                                            </div>
-                                            <div data-value="8">512GB - $8/month
-                                                <div class="config-description">Solid State Drive for faster performance</div>
-                                            </div>
-                                            <div data-value="16">1TB - $16/month
-                                                <div class="config-description">Solid State Drive for faster performance</div>
-                                            </div>
-                                            <div data-value="32">4TB - $32/month
-                                                <div class="config-description">Solid State Drive for faster performance</div>
-                                            </div>
-                                            <div data-value="48">16TB - $48/month
-                                                <div class="config-description">Solid State Drive for faster performance</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- GPU Configuration -->
-                                <div class="config-option">
-                                    <label class="config-label">GPU (Optional)</label>
-                                    <div class="custom-select" id="gpu-config">
-                                        <div class="select-selected" data-value="0">Select GPU</div>
-                                        <div class="select-items">
-                                            <div data-value="0">None - Free
-                                                <div class="config-description">Integrated graphics only</div>
-                                            </div>
-                                            <div data-value="8">Nvidia RTX 3060 12GB - $8/month
-                                                <div class="config-description">Consumer grade GPU for gaming/rendering</div>
-                                            </div>
-                                            <div data-value="16">Nvidia A100 - $16/month
-                                                <div class="config-description">Professional AI/ML workloads</div>
-                                            </div>
-                                            <div data-value="32">Nvidia RTX 4080 Super - $32/month
-                                                <div class="config-description">High-end consumer GPU</div>
-                                            </div>
-                                            <div data-value="48">Nvidia L40 - $48/month
-                                                <div class="config-description">Professional workstation GPU</div>
-                                            </div>
-                                            <div data-value="64">Nvidia H100 - $64/month
-                                                <div class="config-description">Enterprise AI/HPC accelerator</div>
-                                            </div>
-                                            <div data-value="128">Nvidia H200 - $128/month
-                                                <div class="config-description">Next-gen AI accelerator</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Region Configuration -->
-                                <div class="config-option">
-                                    <label class="config-label">Server Location</label>
-                                    <div class="custom-select" id="region-config">
-                                        <div class="select-selected" data-value="0">Select Region</div>
-                                        <div class="select-items">
-                                            <div data-value="0">Random Location - Free
-                                                <div class="config-description">Automatically selected based on availability</div>
-                                            </div>
-                                            
-                                            <div class="spec-category">North America (+$5/month)</div>
-                                            <div data-value="5">United States - East Coast
-                                                <div class="config-description">New York, Boston, North Carolina</div>
-                                            </div>
-                                            <div data-value="5">United States - West Coast
-                                                <div class="config-description">Los Angeles, Seattle, San Francisco</div>
-                                            </div>
-                                            <div data-value="5">Canada - Major Cities
-                                                <div class="config-description">Toronto, Vancouver, Ottawa</div>
-                                            </div>
-                                            
-                                            <div class="spec-category">Europe (+$5/month)</div>
-                                            <div data-value="5">Western Europe
-                                                <div class="config-description">London, Paris, Amsterdam, Dublin</div>
-                                            </div>
-                                            <div data-value="5">Northern Europe
-                                                <div class="config-description">Stockholm, Copenhagen, Oslo</div>
-                                            </div>
-                                            <div data-value="5">Central Europe
-                                                <div class="config-description">Berlin, Warsaw, Vienna</div>
-                                            </div>
-                                            
-                                            <div class="spec-category">Asia Pacific (+$10/month)</div>
-                                            <div data-value="10">East Asia
-                                                <div class="config-description">Tokyo, Seoul, Hong Kong, Singapore</div>
-                                            </div>
-                                            <div data-value="10">South Asia
-                                                <div class="config-description">Mumbai, New Delhi, Bangalore</div>
-                                            </div>
-                                            <div data-value="10">Southeast Asia
-                                                <div class="config-description">Bangkok, Jakarta, Manila</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Operating System -->
-                                <div class="config-option">
-                                    <label class="config-label">Operating System</label>
-                                    <div class="custom-select" id="os-config">
-                                        <div class="select-selected" data-value="0">Select OS</div>
-                                        <div class="select-items">
-                                            <div data-value="0">Linux Server - Free
-                                                <div class="config-description">Ubuntu, CentOS, or Debian distributions</div>
-                                            </div>
-                                            <div data-value="10">Windows Server - $10/month
-                                                <div class="config-description">Windows Server 2022 with full GUI</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Billing Toggle -->
-                            <div class="config-billing">
-                                <div class="billing-toggle">
-                                    <span class="billing-label" id="monthly-label">Monthly</span>
-                                    <label class="billing-switch">
-                                        <input type="checkbox" id="billing-toggle">
-                                        <span class="billing-slider"></span>
-                                    </label>
-                                    <span class="billing-label" id="yearly-label">Yearly <span class="billing-discount">Save 16%</span></span>
-                                </div>
-                            </div>
-                            
-                            <!-- Total Price Display -->
-                            <div class="config-summary">
-                                <div class="price-breakdown" id="price-breakdown">
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">CPU:</span>
-                                        <span class="breakdown-value" id="cpu-cost">$0/month</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">RAM:</span>
-                                        <span class="breakdown-value" id="ram-cost">$0/month</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">Storage:</span>
-                                        <span class="breakdown-value" id="storage-cost">$0/month</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">GPU:</span>
-                                        <span class="breakdown-value" id="gpu-cost">$0/month</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">Region:</span>
-                                        <span class="breakdown-value" id="region-cost">$0/month</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">OS:</span>
-                                        <span class="breakdown-value" id="os-cost">$0/month</span>
-                                    </div>
-                                    <div class="breakdown-total">
-                                        <span class="total-label">Total:</span>
-                                        <span class="total-value" id="total-cost">$0/month</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Action Buttons -->
-                            <div class="config-actions">
-                                <button class="btn btn-primary btn-large btn-full" id="deploy-custom-btn">Deploy Custom Server</button>
-                                <button class="btn btn-outline btn-large btn-full" id="save-config-btn">Save Configuration</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Contact/CTA Section -->
     <section class="cta" id="contact">
         <div class="container">
             <div class="cta-content">
                 <h2 class="cta-title">Ready to Scale Your Applications?</h2>
                 <p class="cta-description">
-                    Join thousands of developers who trust CloudCompute Pro for their infrastructure needs. 
-                    Start your free trial today and experience the difference.
+                    Join thousands of developers who trust CloudCompute for their infrastructure needs. 
+                    Start your server today and experience the difference.
                 </p>
                 <div class="cta-actions">
-                    <a href="#pricing" class="btn btn-primary btn-large">Start Free Trial</a>
-                    <a href="#contact" class="btn btn-outline btn-large">Schedule Demo</a>
+                    <a href="pricing.html" class="btn btn-primary btn-large">See Pricing</a>
                 </div>
             </div>
         </div>
@@ -815,7 +320,7 @@
                         <h4 class="link-title">Product</h4>
                         <ul class="link-list">
                             <li><a href="#features">Features</a></li>
-                            <li><a href="#pricing">Pricing</a></li>
+                            <li><a href="pricing.html">Pricing</a></li>
                             <li><a href="#">Documentation</a></li>
                             <li><a href="#">API Reference</a></li>
                         </ul>
@@ -833,7 +338,7 @@
                         <h4 class="link-title">Support</h4>
                         <ul class="link-list">
                             <li><a href="#">Help Center</a></li>
-                            <li><a href="#contact">Contact Us</a></li>
+                            <li><a href="contact.html">Contact Us</a></li>
                             <li><a href="#">Status Page</a></li>
                             <li><a href="#">Community</a></li>
                         </ul>
@@ -841,16 +346,25 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p class="copyright">© 2024 CloudCompute Pro. All rights reserved.</p>
+                <p class="copyright">© 2025 CloudCompute Pro. All rights reserved.</p>
                 <div class="legal-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                    <a href="#">Cookie Policy</a>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script.js" type="module"></script>
+    <!-- Redirect buttons to auth page -->
+    <script>
+      document.getElementById("get-started")?.addEventListener("click", function() {
+        window.location.href = "sign-up.html";
+      });
+      document.getElementById("sign-in")?.addEventListener("click", function() {
+        window.location.href = "sign-in.html";
+      });
+    </script>
 </body>
 </html>

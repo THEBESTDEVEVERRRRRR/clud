@@ -156,9 +156,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .nav-brand .logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-600);
+    max-height: 32px;
+    width: auto;
+    display: block;
     margin: 0;
 }
 
@@ -854,20 +854,37 @@ h1, h2, h3, h4, h5, h6 {
 
 .custom-config-panel {
     max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out;
+    overflow: visible;
+    opacity: 0;
+    pointer-events: none;
+    transition: max-height 0.5s ease-out, opacity 0.3s ease-out;
 }
 
 .custom-config-panel.expanded {
-    max-height: 3000px;
-    transition: max-height 0.8s ease-in;
+    max-height: none;
+    opacity: 1;
+    pointer-events: all;
+    transition: max-height 0.8s ease-in, opacity 0.3s ease-in;
 }
 
 .config-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 2rem;
     margin-bottom: 2rem;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .config-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .config-option {
@@ -875,6 +892,9 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid var(--gray-200);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .config-label {
@@ -928,7 +948,7 @@ h1, h2, h3, h4, h5, h6 {
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 99;
+    z-index: 1000;
     border: 1px solid var(--gray-200);
     border-top: none;
     border-radius: 0 0 var(--radius-md) var(--radius-md);
@@ -1201,6 +1221,22 @@ input:checked + .billing-slider:before {
 
 .selected-spec-details li:last-child {
     border-bottom: none;
+}
+
+.spec-rundown-location {
+    margin-top: 1.5rem !important;
+    padding-top: 1.5rem !important;
+    border-top: 1px solid var(--gray-200) !important;
+    display: block !important;
+    visibility: visible !important;
+}
+
+.spec-rundown-location select {
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-300);
+    background-color: white;
+    min-width: 200px;
 }
 
 .selected-spec-details li::before {

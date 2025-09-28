@@ -1,12 +1,249 @@
-// DOM Content Loaded
+
+// Define updateSelectedSpecDisplay globally
+function updateSelectedSpecDisplay(info) {
+    const selectedSpecDisplay = document.getElementById('selected-spec');
+    const noSelection = selectedSpecDisplay.querySelector('.no-selection');
+    if (noSelection) noSelection.style.display = 'none';
+    
+    // Remove any existing spec content
+    const existingContent = selectedSpecDisplay.querySelector('.selected-spec-content');
+    if (existingContent) {
+        existingContent.remove();
+    }
+    
+    // Create new spec content
+    const specContent = document.createElement('div');
+    specContent.className = 'selected-spec-content active'; // Add active class here
+    selectedSpecDisplay.appendChild(specContent);
+    
+    // Details
+    const detailsList = info.details.map(detail => `<li>${detail}</li>`).join('');
+    
+    // Get the existing location div from the HTML
+    const existingLocDiv = document.getElementById('spec-rundown-location');
+    console.log('Location div found:', existingLocDiv);
+    console.log('Card type:', info.type);
+    console.log('Is preconfigured:', info.isPreconfigured);
+    
+    if (existingLocDiv) {
+        // Show/hide the existing location selector based on card type
+        if (info.isPreconfigured) {
+            existingLocDiv.style.setProperty('display', 'block', 'important');
+            console.log('Setting location div to display:block');
+        } else {
+            existingLocDiv.style.setProperty('display', 'none', 'important');
+            console.log('Setting location div to display:none');
+        }
+    }
+    
+    specContent.innerHTML = `
+        <div class="selected-spec-header">
+            <div class="selected-spec-info">
+                <h3 class="selected-spec-title">${info.name}</h3>
+                <p class="selected-spec-type">${info.type}</p>
+            </div>
+            <div class="selected-spec-price">${info.price}</div>
+        </div>
+        <div class="selected-spec-details">
+            <ul>${detailsList}</ul>
+        </div>
+        ${info.isPreconfigured ? `
+        <div class="spec-rundown-location" style="display:block; margin-top: 1.5rem;">
+            <label for="spec-location-select" class="location-label" style="font-weight:600;">Location:</label>
+            <select class="location-dropdown" id="spec-location-select" style="margin-left:0.5rem;">
+                <option value="">Select Location</option>
+                <option value="random">Random Location (Free)</option>
+                <optgroup label="North America (+$5/month)">
+                    <option value="us-east">United States - East Coast</option>
+                    <option value="us-west">United States - West Coast</option>
+                </optgroup>
+                <optgroup label="Europe (+$5/month)">
+                    <option value="eu-central">Europe - Central</option>
+                    <option value="eu-west">Europe - West</option>
+                </optgroup>
+                <optgroup label="Asia (+$5/month)">
+                    <option value="asia-east">Asia - East</option>
+                    <option value="asia-southeast">Asia - Southeast</option>
+                </optgroup>
+            </select>
+        </div>
+        ` : ''}`;
+}
+
+// --- SINGLE DOMContentLoaded: All UI and Payment Logic Unified ---
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize all functionality
+    // UI Initialization
     initMobileNavigation();
     initTestimonialCarousel();
     initSpecSelector();
     initCustomConfiguration();
     initSmoothScrolling();
     initScrollAnimations();
+
+
+    // --- Server Card Selection (robust, unified) ---
+    window.selectedServerCard = null;
+    function clearSelections() {
+        document.querySelectorAll('.featured-spec-card, .option-card').forEach(c => c.classList.remove('selected'));
+    }
+    function getCardInfo(card) {
+        // Determine if it's a featured/preconfigured card
+        const isFeatured = card.classList.contains('featured-spec-card');
+        console.log('Is featured card:', isFeatured);
+
+        if (isFeatured) {
+            console.log('Featured card selected:', card);
+            const info = {
+                name: card.querySelector('.spec-title').textContent,
+                price: card.querySelector('.spec-price-large').textContent,
+                type: card.getAttribute('data-type'),
+                details: Array.from(card.querySelectorAll('.highlight')).map(h => h.textContent),
+                isPreconfigured: true // Always true for featured cards
+            };
+            console.log('Card info:', info);
+            return info;
+        } else {
+            const info = {
+                name: card.querySelector('.option-name').textContent,
+                price: card.querySelector('.option-price').textContent,
+                type: card.getAttribute('data-type'),
+                details: [card.querySelector('.option-specs').textContent],
+                isPreconfigured: false
+            };
+            console.log('Option card info:', info);
+            return info;
+        }
+    }
+    function handleCardSelection(card) {
+        console.log('Handling card selection:', card);
+        console.log('Card classList:', Array.from(card.classList));
+        
+        clearSelections();
+        card.classList.add('selected');
+        window.selectedServerCard = card;
+        
+        // Get and validate card info
+        const info = getCardInfo(card);
+        console.log('Processed card info:', info);
+        
+        // Update display with card info
+        updateSelectedSpecDisplay(info);
+    }
+    // Handle featured card clicks
+    document.querySelectorAll('.featured-spec-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't handle if clicking the select button
+            if (e.target.closest('.select-spec-btn')) return;
+            console.log('Featured card clicked:', this);
+            handleCardSelection(this);
+        });
+    });
+
+    // Handle option card clicks
+    document.querySelectorAll('.option-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            console.log('Option card clicked:', this);
+            handleCardSelection(this);
+        });
+    });
+
+    // --- Featured Plan Payment (Select This Server) ---
+    document.querySelectorAll('.featured-spec-card .select-spec-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const locationSelect = document.getElementById('spec-location-select');
+            const card = this.closest('.featured-spec-card');
+            
+            // Check if location is selected for preconfigured servers
+            if (!locationSelect.value) {
+                alert('Please select a server location before proceeding.');
+                locationSelect.focus();
+                return;
+            }
+
+            document.querySelectorAll('.featured-spec-card, .option-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            window.selectedServerCard = card;
+            // Get plan info
+            const price = card.querySelector('.spec-price-large').textContent.replace(/[^\d]/g, '');
+            const name = card.querySelector('.spec-title').textContent;
+            const plan = { name, amount: parseInt(price), type: 'featured' };
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = 'sign-in.html';
+                } else {
+                    showPaymentModal(plan);
+                }
+            });
+        });
+    });
+
+    // --- Deploy Selected Server Button ---
+    const deploySelectedBtn = document.getElementById('deploy-selected-server');
+    if (deploySelectedBtn) {
+        deploySelectedBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const card = window.selectedServerCard;
+            if (!card) {
+                showNotification('Please select a server configuration above first.', 'error');
+                return;
+            }
+            // Featured card
+            if (card.classList.contains('featured-spec-card')) {
+                // Require location selection
+                const locDiv = document.querySelector('.spec-rundown-location');
+                const locSelect = locDiv ? locDiv.querySelector('select') : null;
+                const locValue = locSelect ? locSelect.value : '';
+                if (!locValue) {
+                    showNotification('Please select a location for your server.', 'error');
+                    if (locSelect) locSelect.focus();
+                    return;
+                }
+                const price = card.querySelector('.spec-price-large').textContent.replace(/[^\d]/g, '');
+                const name = card.querySelector('.spec-title').textContent;
+                const plan = { name, amount: parseInt(price), type: 'featured', location: locValue };
+                onAuthStateChanged(auth, (user) => {
+                    if (!user) {
+                        window.location.href = 'sign-in.html';
+                    } else {
+                        showPaymentModal(plan);
+                    }
+                });
+            } else if (card.classList.contains('option-card')) {
+                // Dropdown card
+                const price = card.querySelector('.option-price').textContent.replace(/[^\d]/g, '');
+                const name = card.querySelector('.option-name').textContent;
+                const plan = { name, amount: parseInt(price), type: card.getAttribute('data-type') };
+                onAuthStateChanged(auth, (user) => {
+                    if (!user) {
+                        window.location.href = 'sign-in.html';
+                    } else {
+                        showPaymentModal(plan);
+                    }
+                });
+            }
+        });
+    }
+
+    // --- Deploy Custom Server Button ---
+    const deployCustomBtn = document.getElementById('deploy-custom-btn');
+    if (deployCustomBtn) {
+        deployCustomBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // No required options validation
+            const pricing = calculateCustomPricing();
+            const isYearly = document.getElementById('billing-toggle')?.checked;
+            const amount = isYearly ? pricing.yearly : pricing.monthly;
+            const plan = { name: 'Custom Server', amount, type: 'custom', config: getCustomConfiguration() };
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = 'sign-in.html';
+                } else {
+                    showPaymentModal(plan);
+                }
+            });
+        });
+    }
 });
 
 // Mobile Navigation
@@ -38,6 +275,60 @@ function initMobileNavigation() {
             }
         });
     }
+}
+
+
+// --- Custom Configuration Pricing Functions (GLOBAL SCOPE) ---
+function calculateCustomPricing() {
+    const cpu = parseInt(document.getElementById('cpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
+    const ram = parseInt(document.getElementById('ram-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
+    const storage = parseInt(document.getElementById('storage-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
+    const gpu = parseInt(document.getElementById('gpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
+    const region = parseInt(document.getElementById('region-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
+    const os = parseInt(document.getElementById('os-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
+    const monthly = cpu + ram + storage + gpu + region + os;
+    const yearly = monthly * 10; // 16% discount
+    return {
+        cpu,
+        ram,
+        storage,
+        gpu,
+        region,
+        os,
+        monthly,
+        yearly
+    };
+}
+
+function getCustomConfiguration() {
+    return {
+        cpu: {
+            text: document.getElementById('cpu-config')?.querySelector('.select-selected')?.textContent || '',
+            value: document.getElementById('cpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
+        },
+        ram: {
+            text: document.getElementById('ram-config')?.querySelector('.select-selected')?.textContent || '',
+            value: document.getElementById('ram-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
+        },
+        storage: {
+            text: document.getElementById('storage-config')?.querySelector('.select-selected')?.textContent || '',
+            value: document.getElementById('storage-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
+        },
+        gpu: {
+            text: document.getElementById('gpu-config')?.querySelector('.select-selected')?.textContent || '',
+            value: document.getElementById('gpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
+        },
+        region: {
+            text: document.getElementById('region-config')?.querySelector('.select-selected')?.textContent || '',
+            value: document.getElementById('region-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
+        },
+        os: {
+            text: document.getElementById('os-config')?.querySelector('.select-selected')?.textContent || '',
+            value: document.getElementById('os-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
+        },
+        pricing: calculateCustomPricing(),
+        timestamp: new Date().toISOString()
+    };
 }
 
 // Custom Configuration System
@@ -197,60 +488,6 @@ function initCustomConfiguration() {
             totalElement.textContent = `${pricing.monthly}/month`;
         }
     }
-    
-    function calculateCustomPricing() {
-        const cpu = parseInt(document.getElementById('cpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
-        const ram = parseInt(document.getElementById('ram-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
-        const storage = parseInt(document.getElementById('storage-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
-        const gpu = parseInt(document.getElementById('gpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
-        const region = parseInt(document.getElementById('region-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
-        const os = parseInt(document.getElementById('os-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0');
-        
-        const monthly = cpu + ram + storage + gpu + region + os;
-        const yearly = monthly * 10; // 16% discount
-        
-        return {
-            cpu,
-            ram,
-            storage,
-            gpu,
-            region,
-            os,
-            monthly,
-            yearly
-        };
-    }
-    
-    function getCustomConfiguration() {
-        return {
-            cpu: {
-                text: document.getElementById('cpu-config')?.querySelector('.select-selected')?.textContent || '',
-                value: document.getElementById('cpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
-            },
-            ram: {
-                text: document.getElementById('ram-config')?.querySelector('.select-selected')?.textContent || '',
-                value: document.getElementById('ram-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
-            },
-            storage: {
-                text: document.getElementById('storage-config')?.querySelector('.select-selected')?.textContent || '',
-                value: document.getElementById('storage-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
-            },
-            gpu: {
-                text: document.getElementById('gpu-config')?.querySelector('.select-selected')?.textContent || '',
-                value: document.getElementById('gpu-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
-            },
-            region: {
-                text: document.getElementById('region-config')?.querySelector('.select-selected')?.textContent || '',
-                value: document.getElementById('region-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
-            },
-            os: {
-                text: document.getElementById('os-config')?.querySelector('.select-selected')?.textContent || '',
-                value: document.getElementById('os-config')?.querySelector('.select-selected')?.getAttribute('data-value') || '0'
-            },
-            pricing: calculateCustomPricing(),
-            timestamp: new Date().toISOString()
-        };
-    }
 }
 
 // Testimonial Carousel
@@ -342,37 +579,7 @@ function initSpecSelector() {
         75: { name: 'Premium Storage', price: '$75/month', type: 'Storage Server', details: ['64TB SSD', '8 vCPU', '64GB RAM', 'Multi-database format support'] }
     };
     
-    // Handle featured card selections
-    featuredCards.forEach(card => {
-        const selectBtn = card.querySelector('.select-spec-btn');
-        
-        selectBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove selected class from all cards
-            document.querySelectorAll('.featured-spec-card, .option-card').forEach(c => {
-                c.classList.remove('selected');
-            });
-            
-            // Add selected class to clicked card
-            card.classList.add('selected');
-            
-            // Get server data
-            const value = card.getAttribute('data-value');
-            const spec = serverSpecs[value];
-            
-            if (spec) {
-                updateSelectedSpecDisplay(spec.name, spec.price, spec.type, spec.details);
-            }
-        });
-        
-        // Also handle card click
-        card.addEventListener('click', function() {
-            if (!this.classList.contains('selected')) {
-                selectBtn.click();
-            }
-        });
-    });
+    // Remove legacy card selection logic here; handled by new system at top of file
     
     // Handle show more toggle
     if (showMoreToggle && additionalOptions) {
@@ -391,73 +598,10 @@ function initSpecSelector() {
         });
     }
     
-    // Handle option card selections in dropdown
-    optionCards.forEach(card => {
-        card.addEventListener('click', function() {
-            // Remove selected class from all cards
-            document.querySelectorAll('.featured-spec-card, .option-card').forEach(c => {
-                c.classList.remove('selected');
-            });
-            
-            // Add selected class to clicked card
-            this.classList.add('selected');
-            
-            // Get server data
-            const value = this.getAttribute('data-value');
-            const spec = serverSpecs[value];
-            
-            if (spec) {
-                updateSelectedSpecDisplay(spec.name, spec.price, spec.type, spec.details);
-            }
-            
-            // Close dropdown after selection
-            if (isExpanded) {
-                showMoreToggle.click();
-            }
-        });
-    });
+    // Remove legacy option card selection logic here; handled by new system at top of file
     
-    function updateSelectedSpecDisplay(name, price, type, details) {
-        const noSelection = selectedSpecDisplay.querySelector('.no-selection');
-        
-        // Remove no-selection content
-        if (noSelection) {
-            noSelection.style.display = 'none';
-        }
-        
-        // Create or update selected spec content
-        let specContent = selectedSpecDisplay.querySelector('.selected-spec-content');
-        if (!specContent) {
-            specContent = document.createElement('div');
-            specContent.className = 'selected-spec-content';
-            selectedSpecDisplay.appendChild(specContent);
-        }
-        
-        // Create details list
-        const detailsList = details.map(detail => `<li>${detail}</li>`).join('');
-        
-        specContent.innerHTML = `
-            <div class="selected-spec-header">
-                <div class="selected-spec-info">
-                    <h3 class="selected-spec-title">${name}</h3>
-                    <p class="selected-spec-type">${type}</p>
-                </div>
-                <div class="selected-spec-price">${price}</div>
-            </div>
-            <div class="selected-spec-details">
-                <ul>${detailsList}</ul>
-            </div>
-        `;
-        
-        specContent.classList.add('active');
-        specContent.style.display = 'block';
-        
-        // Smooth scroll to selection
-        selectedSpecDisplay.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-        });
-    }
+
+    // Remove legacy option card selection logic here; handled by new system at top of file
 }
 
 // Smooth Scrolling
@@ -543,7 +687,7 @@ function handleFormSubmission(form) {
         
         if (isValid) {
             // Here you would typically send the form data to a server
-            showNotification('Thank you for your message! We\'ll get back to you soon.', 'success');
+            showNotification('Thank you for your message! We will get back to you soon.', 'success');
             form.reset();
         } else {
             showNotification('Please fill in all required fields.', 'error');
@@ -675,3 +819,329 @@ function manageFocus() {
         observer.observe(navMenu, { attributes: true });
     }
 }
+
+// --- Payment Modal Logic ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+import { getDatabase, ref, push, set, get, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-E-8tOgugt5gZkVDYT4XnQdzY9XhRKaw",
+  authDomain: "clud-d5315.firebaseapp.com",
+  projectId: "clud-d5315",
+  storageBucket: "clud-d5315.appspot.com",
+  messagingSenderId: "953090765245",
+  appId: "1:953090765245:web:008cfc0572335df5f122d4",
+  databaseURL: "https://clud-d5315-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// Export the initialized instances
+export { app, auth, db };
+
+// Test database connection and write operation
+const connectedRef = ref(db, '.info/connected');
+onValue(connectedRef, (snap) => {
+    if (snap.val() === true) {
+        console.log('Connected to Firebase Realtime Database');
+        
+        // Test write operation
+        const testRef = ref(db, 'test');
+            set(testRef, {
+                timestamp: serverTimestamp(),
+                message: 'Test connection successful'
+            }).then(() => {
+                console.log('Test write successful');
+            }).catch((error) => {
+                console.error('Test write failed:', error);
+            });
+        } else {
+            console.log('Not connected to Firebase Realtime Database');
+        }
+    });
+    
+    console.log('Firebase Realtime Database initialized successfully');
+
+async function createOrder(orderData) {
+    try {
+        console.log('Starting order creation...');
+        
+        const user = auth.currentUser;
+        if (!user) {
+            console.error('No user is signed in');
+            window.location.href = 'sign-in.html';
+            return null;
+        }
+
+        const order = {
+            ...orderData,
+            userId: user.uid,
+            userEmail: user.email,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            createdAtLocal: new Date().toISOString(),
+            testField: 'This is a test order' // Added for testing
+        };
+
+        console.log('Created order object:', order);
+        
+        // Create a direct reference to orders
+        const ordersRef = ref(db, 'orders');
+        console.log('Created database reference');
+        
+        // Generate a new key
+        const newOrderRef = push(ordersRef);
+        console.log('Generated new key:', newOrderRef.key);
+        
+        if (!newOrderRef.key) {
+            throw new Error('Failed to generate order key');
+        }
+        
+        // Set the data directly
+        console.log('Attempting to save order data...');
+        try {
+            await set(newOrderRef, {
+                ...order,
+                orderId: newOrderRef.key
+            });
+            console.log('Order saved successfully with ID:', newOrderRef.key);
+            
+            // Verify the write by reading it back
+            const snapshot = await get(newOrderRef);
+            if (snapshot.exists()) {
+                console.log('Order verified in database:', snapshot.val());
+                return newOrderRef.key;
+            } else {
+                throw new Error('Order write failed - could not verify data');
+            }
+        } catch (writeError) {
+            console.error('Error writing to database:', writeError);
+            throw writeError;
+        }
+    } catch (error) {
+        console.error('Error creating order:', error);
+        if (error.code === 'PERMISSION_DENIED') {
+            console.error('Permission denied. Please check Realtime Database rules.');
+        } else if (error.code === 'NETWORK_ERROR') {
+            console.error('Database is currently unavailable. Please check your connection.');
+        } else {
+            console.error('Database error:', error.code, error.message);
+        }
+        throw error;
+    }
+}
+
+function base64Encode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function showPaymentModal(plan) {
+  const modal = document.getElementById('payment-modal');
+  const closeBtn = document.getElementById('close-payment-modal');
+  const payCreditBtn = document.getElementById('pay-credit-card');
+  const payExternalBtn = document.getElementById('pay-external');
+  const paymentOptions = document.getElementById('payment-options');
+  const ccForm = document.getElementById('credit-card-form');
+  const paymentError = document.getElementById('payment-error');
+  
+  // Get selected location if it's a preconfigured server
+  const locationSelect = document.getElementById('spec-location-select');
+  let selectedLocation = null;
+  let locationCost = 0;
+  
+  if (locationSelect && locationSelect.value) {
+      selectedLocation = locationSelect.value;
+      
+      // Calculate location cost based on selection
+      if (selectedLocation === 'random' || selectedLocation === '') {
+          locationCost = 0;
+      } else if (['us-east', 'us-west', 'canada', 'w-europe', 'n-europe', 'c-europe'].includes(selectedLocation)) {
+          locationCost = 5;
+      } else {
+          locationCost = 10; // Asia Pacific, Australia, South America, Africa
+      }
+  }
+  
+  // Add location info to the plan object
+  if (selectedLocation) {
+      plan.location = selectedLocation;
+      plan.locationCost = locationCost;
+      plan.originalAmount = plan.amount;
+      plan.amount = plan.amount + locationCost; // Add location cost to total
+  }
+
+  modal.style.display = 'flex';
+  paymentOptions.style.display = 'block';
+  ccForm.style.display = 'none';
+  paymentError.style.display = 'none';
+
+  closeBtn.onclick = () => { modal.style.display = 'none'; };
+  window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+  payCreditBtn.onclick = () => {
+    paymentOptions.style.display = 'none';
+    ccForm.style.display = 'flex';
+  };
+  
+  payExternalBtn.onclick = async (e) => {
+    e.preventDefault();
+    paymentError.style.display = 'none';
+    
+    try {
+        payExternalBtn.disabled = true;
+        payExternalBtn.textContent = 'Processing...';
+        
+        const orderData = {
+            ...plan,
+            paymentMethod: 'external',
+            paymentStatus: 'pending'
+        };
+        
+        console.log('Creating order with data:', orderData);
+        const orderId = await createOrder(orderData);
+        console.log('Order created with ID:', orderId);
+        
+        if (!orderId) {
+            throw new Error('Failed to create order - no order ID returned');
+        }
+        
+        sessionStorage.setItem('currentOrderId', orderId);
+        sessionStorage.setItem('purchasedPlan', JSON.stringify({...plan, orderId}));
+        
+        const amount = plan.amount;
+        const encodedAmount = base64Encode(amount.toString());
+        const url = 'aHR0cHM6Ly9yZWltYWdpbmVkLWZpc2hzdGljay13cng3dzc5Z3B3Z3FoZzY2NS01NTAwLmFwcC5naXRodWIuZGV2L3N1Y2Nlc2Z1bHBheW1lbnQuaHRtbA==';
+        
+        // Redirect to payment page
+        console.log('Redirecting to payment page...');
+        window.location.href = `https://bank.tush.my.id/pages/payment?code=NTY1NjU2&amount=${encodedAmount}&url=${url}`;
+    } catch (error) {
+        console.error('Error processing payment:', error);
+        paymentError.textContent = 'An error occurred while processing your order. Please try again.';
+        paymentError.style.display = 'block';
+        
+        // Reset button state
+        payExternalBtn.disabled = false;
+        payExternalBtn.textContent = 'Pay with External Payment';
+    }
+  };
+  ccForm.onsubmit = async function(e) {
+    e.preventDefault();
+    
+    // Validate credit card
+    const number = document.getElementById('cc-number').value.replace(/\s+/g, '');
+    const expiry = document.getElementById('cc-expiry').value;
+    const cvc = document.getElementById('cc-cvc').value;
+    
+    if (!/^\d{16}$/.test(number)) {
+      paymentError.textContent = 'Invalid card number.';
+      paymentError.style.display = 'block';
+      return;
+    }
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+      paymentError.textContent = 'Invalid expiry format.';
+      paymentError.style.display = 'block';
+      return;
+    }
+    if (!/^\d{3,4}$/.test(cvc)) {
+      paymentError.textContent = 'Invalid CVC.';
+      paymentError.style.display = 'block';
+      return;
+    }
+
+    try {
+        // Create order in Firebase
+        const orderData = {
+            ...plan,
+            paymentMethod: 'credit_card',
+            paymentStatus: 'processing',
+            cardLast4: number.slice(-4)
+        };
+        
+        const orderId = await createOrder(orderData);
+        if (orderId) {
+            // Store order details and redirect
+            sessionStorage.setItem('currentOrderId', orderId);
+            sessionStorage.setItem('purchasedPlan', JSON.stringify({...plan, orderId}));
+            window.location.href = 'succesfulpayment.html';
+        }
+    } catch (error) {
+        console.error('Error processing payment:', error);
+        paymentError.textContent = 'An error occurred while processing your payment. Please try again.';
+        paymentError.style.display = 'block';
+    }
+  };
+}
+
+
+// Unified payment logic for both featured and custom config
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing code...
+    // Featured plans payment
+    document.querySelectorAll('.featured-spec-card .select-spec-btn').forEach((btn) => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Select the card visually
+            document.querySelectorAll('.featured-spec-card, .option-card').forEach(c => c.classList.remove('selected'));
+            const card = btn.closest('.featured-spec-card');
+            card.classList.add('selected');
+            // Get plan info
+            const price = card.querySelector('.spec-price-large').textContent.replace(/[^\d]/g, '');
+            const name = card.querySelector('.spec-title').textContent;
+            const plan = { name, amount: parseInt(price), type: 'featured' };
+            // Check login
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = 'sign-in.html';
+                } else {
+                    showPaymentModal(plan);
+                }
+            });
+        });
+    });
+    // Deploy custom server payment
+    const deployBtn = document.getElementById('deploy-custom-btn');
+    if (deployBtn) {
+        deployBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Get total pricing
+            const pricing = calculateCustomPricing();
+            const isYearly = document.getElementById('billing-toggle')?.checked;
+            const amount = isYearly ? pricing.yearly : pricing.monthly;
+            const plan = { name: 'Custom Server', amount, type: 'custom', config: getCustomConfiguration() };
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = 'sign-in.html';
+                } else {
+                    showPaymentModal(plan);
+                }
+            });
+        });
+    }
+    // Deploy Selected Server button (for featured cards)
+    const deploySelectedBtn = document.getElementById('deploy-selected-server');
+    if (deploySelectedBtn) {
+        deploySelectedBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Find selected featured card
+            const card = document.querySelector('.featured-spec-card.selected');
+            if (!card) {
+                showNotification('Please select a server configuration above first.', 'error');
+                return;
+            }
+            const price = card.querySelector('.spec-price-large').textContent.replace(/[^\d]/g, '');
+            const name = card.querySelector('.spec-title').textContent;
+            const plan = { name, amount: parseInt(price), type: 'featured' };
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = 'sign-in.html';
+                } else {
+                    showPaymentModal(plan);
+                }
+            });
+        });
+    }
+});

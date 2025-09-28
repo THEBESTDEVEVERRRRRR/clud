@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful - CloudCompute Pro</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .success-container {
+      max-width: 400px;
+      margin: 5rem auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .success-icon {
+      font-size: 3rem;
+      color: #10b981;
+      margin-bottom: 1rem;
+    }
+    .success-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .success-desc {
+      color: #4b5563;
+      margin-bottom: 2rem;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 4px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-container">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Payment Successful!</div>
+    <div class="success-desc">Thank you for your purchase. Your plan is now active.</div>
+    <a href="dashboard.html" class="btn">Go to Dashboard</a>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+    // You may want to pass plan info via query params or sessionStorage
+    // Example: sessionStorage.getItem('purchasedPlan')
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-E-8tOgugt5gZkVDYT4XnQdzY9XhRKaw",
+      authDomain: "clud-d5315.firebaseapp.com",
+      projectId: "clud-d5315",
+      storageBucket: "clud-d5315.firebasestorage.app",
+      messagingSenderId: "953090765245",
+      appId: "1:953090765245:web:008cfc0572335df5f122d4"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const plan = sessionStorage.getItem('purchasedPlan');
+        if (plan) {
+          set(ref(db, 'users/' + user.uid + '/plan'), JSON.parse(plan));
+          sessionStorage.removeItem('purchasedPlan');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

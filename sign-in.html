@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - CloudCompute Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .input {
+        width: 100%;
+        padding: 16px 18px;
+        border: 1.5px solid #d1d5db;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        margin-bottom: 1.2rem;
+        background: #f9fafb;
+        transition: border 0.2s;
+      }
+      .input:focus {
+        outline: none;
+        border: 1.5px solid #007bff;
+        background: #fff;
+      }
+    </style>
+</head>
+<body>
+    <!-- Header/Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <div class="nav-brand">
+                <a href="/">
+                    <img src="clud.png" alt="Clud Logo" class="logo" style="height:48px; width:auto;" />
+                </a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="index.html#features" class="nav-link">Features</a></li>
+                    <li class="nav-item"><a href="index.html#testimonials" class="nav-link">Testimonials</a></li>
+                    <li class="nav-item"><a href="pricing.html" class="nav-link">Pricing</a></li>
+                    <li class="nav-item"><a href="index.html#contact" class="nav-link">Contact</a></li>
+                </ul>
+            </div>
+            <div class="nav-actions">
+                <a href="sign-in.html" class="btn btn-outline" id="sign-in">Sign In</a>
+                <a href="sign-up.html" class="btn btn-primary" id="get-started">Get Started</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Sign In Section -->
+    <section class="auth-section">
+        <div class="container" style="max-width:400px; margin:auto;">
+            <div class="card" style="box-shadow: var(--shadow-md); border-radius: var(--radius-md); padding: 2rem; background: #fff; margin-top: 3rem;">
+                <h2 class="section-title" style="text-align:center; margin-bottom:1.5rem;">Sign In</h2>
+                <form onsubmit="signIn(event)">
+                    <label for="signin-email" class="config-label">Email</label>
+                    <input type="email" id="signin-email" class="input" required placeholder="you@email.com">
+                    <label for="signin-password" class="config-label">Password</label>
+                    <input type="password" id="signin-password" class="input" required placeholder="Password">
+                    <button type="submit" class="btn btn-primary btn-large" style="width:100%;">Sign In</button>
+                </form>
+                <div style="text-align:center; margin-top:1rem;">
+                    <span>Don't have an account? <a href="sign-up.html">Sign Up</a></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top:4rem;">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3 class="footer-logo">CloudCompute Pro</h3>
+                    <p class="footer-tagline">Enterprise-grade compute infrastructure for modern applications</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">© 2025 CloudCompute Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+      import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+      const firebaseConfig = {
+      apiKey: "AIzaSyA-E-8tOgugt5gZkVDYT4XnQdzY9XhRKaw",
+      authDomain: "clud-d5315.firebaseapp.com",
+      projectId: "clud-d5315",
+      storageBucket: "clud-d5315.firebasestorage.app",
+      messagingSenderId: "953090765245",
+      appId: "1:953090765245:web:008cfc0572335df5f122d4"
+      };
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      window.signIn = function(e) {
+        e.preventDefault();
+        const email = document.getElementById("signin-email").value;
+        const password = document.getElementById("signin-password").value;
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            alert("Sign In Successful!");
+            window.location.href = "dashboard.html";
+          })
+          .catch((error) => {
+            alert("Error: " + error.message);
+          });
+      };
+    </script>
+</body>
+</html>

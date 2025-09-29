@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status - CloudCompute Pro</title>
+    <meta name="description" content="Real-time status of CloudCompute Pro servers and services across all regions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .status-page {
+            padding: 2rem 0;
+            min-height: 80vh;
+        }
+        
+        .status-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .status-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .status-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .overall-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            color: white;
+        }
+        
+        .overall-status-icon {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .overall-status-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .status-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .status-region {
+            background: var(--card-bg, #ffffff);
+            border: 1px solid var(--border-color, #e5e7eb);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .region-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color, #e5e7eb);
+        }
+        
+        .region-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .region-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #10b981;
+        }
+        
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .location-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-secondary, #f9fafb);
+            border-radius: 8px;
+            border: 1px solid var(--border-light, #f3f4f6);
+        }
+        
+        .location-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .location-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .location-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+        
+        .response-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .status-text {
+            font-weight: 500;
+        }
+        
+        .uptime-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .uptime-card {
+            background: var(--card-bg, #ffffff);
+            border: 1px solid var(--border-color, #e5e7eb);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .uptime-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+        
+        .uptime-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .status-title {
+                font-size: 2rem;
+            }
+            
+            .locations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .uptime-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <div class="nav-brand">
+                <a href="/">
+                    <img src="clud.png" alt="Clud Logo" class="logo" style="height:48px; width:auto;" />
+                </a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="index.html#features" class="nav-link">Features</a></li>
+                    <li class="nav-item"><a href="index.html#testimonials" class="nav-link">Testimonials</a></li>
+                    <li class="nav-item"><a href="pricing.html" class="nav-link">Pricing</a></li>
+                    <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
+                </ul>
+            </div>
+            <div class="nav-actions">
+                <a href="sign-in.html" class="btn btn-outline">Sign In</a>
+                <a href="sign-up.html" class="btn btn-primary">Get Started</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Status Page Content -->
+    <section class="status-page">
+        <div class="container">
+            <div class="status-header">
+                <h1 class="status-title">System Status</h1>
+                <p class="status-subtitle">Real-time status of all CloudCompute Pro services and infrastructure</p>
+                
+                <div class="overall-status">
+                    <div class="overall-status-icon">
+                        <div class="status-indicator"></div>
+                    </div>
+                    <div class="overall-status-text">All Systems Operational</div>
+                </div>
+            </div>
+
+            <!-- Uptime Statistics -->
+            <div class="uptime-stats">
+                <div class="uptime-card">
+                    <div class="uptime-value">99.99%</div>
+                    <div class="uptime-label">Uptime This Month</div>
+                </div>
+                <div class="uptime-card">
+                    <div class="uptime-value">99.98%</div>
+                    <div class="uptime-label">Uptime Last 90 Days</div>
+                </div>
+                <div class="uptime-card">
+                    <div class="uptime-value">12ms</div>
+                    <div class="uptime-label">Average Response Time</div>
+                </div>
+                <div class="uptime-card">
+                    <div class="uptime-value">0</div>
+                    <div class="uptime-label">Active Incidents</div>
+                </div>
+            </div>
+
+            <!-- Status by Region -->
+            <div class="status-grid">
+                <!-- North America -->
+                <div class="status-region">
+                    <div class="region-header">
+                        <h2 class="region-title">North America</h2>
+                        <div class="region-status">
+                            <div class="status-indicator"></div>
+                            <span>Operational</span>
+                        </div>
+                    </div>
+                    <div class="locations-grid">
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - Boston</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - New York</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - North Carolina</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - South Carolina</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - Orlando</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - San Antonio</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">4ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - Los Angeles</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">10ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - Seattle</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">11ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United States - Anchorage</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">3ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Canada - Ottawa</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Canada - Toronto</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Canada - Vancouver</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Mexico - Mexico City</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Mexico - Monterrey</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Mexico - Tijuana</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Jamaica - Kingston</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Europe -->
+                <div class="status-region">
+                    <div class="region-header">
+                        <h2 class="region-title">Europe</h2>
+                        <div class="region-status">
+                            <div class="status-indicator"></div>
+                            <span>Operational</span>
+                        </div>
+                    </div>
+                    <div class="locations-grid">
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Ireland - Dublin</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">4ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United Kingdom - London</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United Kingdom - Manchester</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">United Kingdom - Glasgow</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">France - Paris</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">France - Marseille</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Spain - Madrid</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Portugal - Lisbon</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Germany - Berlin</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Netherlands - Amsterdam</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Poland - Warsaw</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Denmark - Copenhagen</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Sweden - Stockholm</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Norway - Oslo</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Italy - Rome</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Italy - Genoa</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Switzerland - Bern</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Greece - Athens</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Russia - Moscow</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Asia -->
+                <div class="status-region">
+                    <div class="region-header">
+                        <h2 class="region-title">Asia</h2>
+                        <div class="region-status">
+                            <div class="status-indicator"></div>
+                            <span>Operational</span>
+                        </div>
+                    </div>
+                    <div class="locations-grid">
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Russia - Vladivostok</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">South Korea - Seoul</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">China - Beijing</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">10ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">China - Hong Kong</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">11ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Japan - Tokyo</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">12ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Thailand - Bangkok</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">India - New Delhi</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">India - Mumbai</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">India - Bengaluru</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">India - Kolkata</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Kazakhstan - Astana</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Indonesia - Jakarta</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Philippines - Manila</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Turkey - Istanbul</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Saudi Arabia - Riyadh</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">UAE - Dubai</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">10ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Singapore</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">11ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Taiwan - Taipei</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">12ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- South America -->
+                <div class="status-region">
+                    <div class="region-header">
+                        <h2 class="region-title">South America</h2>
+                        <div class="region-status">
+                            <div class="status-indicator"></div>
+                            <span>Operational</span>
+                        </div>
+                    </div>
+                    <div class="locations-grid">
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Colombia - Bogota</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Peru - Lima</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Bolivia - La Paz</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Brazil - Sao Paulo</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Argentina - Buenos Aires</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Uruguay - Montevideo</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">10ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Africa -->
+                <div class="status-region">
+                    <div class="region-header">
+                        <h2 class="region-title">Africa</h2>
+                        <div class="region-status">
+                            <div class="status-indicator"></div>
+                            <span>Operational</span>
+                        </div>
+                    </div>
+                    <div class="locations-grid">
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Morocco - Casablanca</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Nigeria - Lagos</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Botswana - Gaborone</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">South Africa - Johannesburg</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">South Africa - Bloemfontein</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">South Africa - Cape Town</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">10ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Oceania -->
+                <div class="status-region">
+                    <div class="region-header">
+                        <h2 class="region-title">Oceania</h2>
+                        <div class="region-status">
+                            <div class="status-indicator"></div>
+                            <span>Operational</span>
+                        </div>
+                    </div>
+                    <div class="locations-grid">
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Australia - Sydney</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">5ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Australia - Melbourne</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">6ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Australia - Perth</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">7ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">Australia - Darwin</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">8ms</span>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <div class="status-indicator"></div>
+                                <span class="location-name">New Zealand - Wellington</span>
+                            </div>
+                            <div class="location-status">
+                                <span class="status-text">Operational</span>
+                                <span class="response-time">9ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="last-updated">
+                Last updated: Today at 14:30 UTC
+            </div>
+        </div>
+    </section>
+    
+    <script>
+function updateResponseTimes() {
+    const responseTimeElements = document.querySelectorAll('.response-time');
+    
+    responseTimeElements.forEach(element => {
+        // Generate random response time between 2-12ms
+        const responseTime = Math.floor(Math.random() * 11) + 2;
+        element.textContent = `${responseTime}ms`;
+    });
+}
+
+// Update response times immediately
+updateResponseTimes();
+
+// Update response times every 10 seconds
+setInterval(updateResponseTimes, 10000);
+
+// Update last updated time
+function updateLastUpdated() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { 
+        hour12: false, 
+        timeZone: 'UTC',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    const lastUpdatedElement = document.querySelector('.last-updated');
+    if (lastUpdatedElement) {
+        lastUpdatedElement.textContent = `Last updated: Today at ${timeString} UTC`;
+    }
+}
+
+// Update last updated time every 10 seconds as well
+updateLastUpdated();
+setInterval(updateLastUpdated, 10000);
+</script>
+</body>
+</html>

@@ -182,6 +182,69 @@
             margin-top: 2rem;
         }
         
+        .location-tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            z-index: 1000;
+            min-width: 280px;
+            display: none;
+            pointer-events: none;
+        }
+
+        .tooltip-header {
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .node-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .node-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .node-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .node-status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .node-name {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .node-latency {
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+
+        .location-item {
+            position: relative;
+        }
+        
         @media (max-width: 768px) {
             .status-title {
                 font-size: 2rem;
@@ -1084,6 +1147,241 @@ function updateLastUpdated() {
 // Update last updated time every 10 seconds as well
 updateLastUpdated();
 setInterval(updateLastUpdated, 10000);
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to generate region prefix based on location
+    function getRegionPrefix(locationName) {
+        const location = locationName.toLowerCase();
+        
+        // North America
+        if (location.includes('united states') || location.includes('canada') || 
+            location.includes('mexico') || location.includes('jamaica')) {
+            return 'NA';
+        }
+        // Europe
+        else if (location.includes('ireland') || location.includes('united kingdom') || 
+                 location.includes('france') || location.includes('spain') || 
+                 location.includes('portugal') || location.includes('germany') || 
+                 location.includes('netherlands') || location.includes('poland') || 
+                 location.includes('denmark') || location.includes('sweden') || 
+                 location.includes('norway') || location.includes('italy') || 
+                 location.includes('switzerland') || location.includes('greece') || 
+                 location.includes('russia')) {
+            return 'EU';
+        }
+        // Southeast Asia
+        else if (   location.includes('india') ||
+                    location.includes('kazakhstan') ||
+                    location.includes('indonesia') ||
+                    location.includes('saudi arabia') ||
+                    location.includes('philippines') ||
+                    location.includes('turkey') ||
+                    location.includes('singapore') ||
+                    location.includes('uae') || location.includes('united arab emirates') ||
+                    location.includes('taiwan') ||
+                    location.includes('south korea') ||
+                    location.includes('china') ||
+                    location.includes('japan') ||
+                    location.includes('thailand'))
+                  {
+            return 'AS';
+        }
+                else if (
+        location.includes('colombia') ||
+        location.includes('puerto rico') ||
+        location.includes('bolivia') ||
+        location.includes('brazil') ||
+        location.includes('argentina') ||
+        location.includes('uruguay')
+        ) {
+        return 'SA';
+        }
+        // Africa
+        else if (location.includes('morocco') || location.includes('nigeria') || 
+                 location.includes('botswana') || location.includes('south africa') || 
+                 location.includes('za')) {
+            return 'AF';
+        }
+        // Oceania
+        else if (location.includes('australia') || location.includes('new zealand')) {
+            return 'OC';}
+
+        
+        return 'GLB'; // Global fallback
+    }
+
+    // Function to get country code
+    function getCountryCode(locationName) {
+        const location = locationName.toLowerCase();
+        
+        if (location.includes('united states')) return 'US';
+        if (location.includes('canada')) return 'CA';
+        if (location.includes('mexico')) return 'MX';
+        if (location.includes('jamaica')) return 'JM';
+        if (location.includes('ireland')) return 'IE';
+        if (location.includes('united kingdom')) return 'UK';
+        if (location.includes('france')) return 'FR';
+        if (location.includes('spain')) return 'ES';
+        if (location.includes('portugal')) return 'PT';
+        if (location.includes('germany')) return 'DE';
+        if (location.includes('netherlands')) return 'NL';
+        if (location.includes('poland')) return 'PL';
+        if (location.includes('denmark')) return 'DK';
+        if (location.includes('sweden')) return 'SE';
+        if (location.includes('norway')) return 'NO';
+        if (location.includes('italy')) return 'IT';
+        if (location.includes('switzerland')) return 'CH';
+        if (location.includes('greece')) return 'GR';
+        if (location.includes('russia')) return 'RU';
+        if (location.includes('south korea')) return 'KR';
+        if (location.includes('china')) return 'CN';
+        if (location.includes('japan')) return 'JP';
+        if (location.includes('thailand')) return 'TH';
+        if (location.includes('india')) return 'IN';
+        if (location.includes('india')) return 'IN';
+        if (location.includes('kazakhstan')) return 'KZ';
+        if (location.includes('indonesia')) return 'ID';
+        if (location.includes('saudi arabia')) return 'SA';
+        if (location.includes('philippines')) return 'PH';
+        if (location.includes('turkey')) return 'TR';
+        if (location.includes('singapore')) return 'SG';
+        if (location.includes('uae') || location.includes('united arab emirates')) return 'UAE';
+        if (location.includes('taiwan')) return 'TW';
+        if (location.includes('colombia')) return 'CO';
+        if (location.includes('puerto rico')) return 'PR';
+        if (location.includes('bolivia')) return 'BO';
+        if (location.includes('brazil')) return 'BR';
+        if (location.includes('argentina')) return 'AR';
+        if (location.includes('uruguay')) return 'UY';
+        if (location.includes('morocco')) return 'MA';
+        if (location.includes('nigeria')) return 'NG';
+        if (location.includes('botswana')) return 'BW';
+        if (location.includes('south africa') || location.includes('za')) return 'ZA';
+        if (location.includes('australia')) return 'AU';
+        if (location.includes('new zealand')) return 'NZ';
+
+        
+        return 'XX';
+    }
+
+    // Function to get city name
+    function getCityName(locationName) {
+        const parts = locationName.split(' - ');
+        return parts[1] ? parts[1].replace(/\s+/g, '') : 'City';
+    }
+
+    // Function to generate random latency
+    function generateLatency() {
+        return Math.floor(Math.random() * 8) + 2; // 2-10ms
+    }
+
+    // Function to create tooltip content
+    function createTooltipContent(locationName) {
+        const regionPrefix = getRegionPrefix(locationName);
+        const countryCode = getCountryCode(locationName);
+        const cityName = getCityName(locationName);
+        
+        let nodesHTML = '';
+        
+        for (let i = 1; i <= 10; i++) {
+            const nodeName = `${regionPrefix}-${countryCode}-${cityName}-node${i}-cloudcompute`;
+            const latency = generateLatency();
+            
+            nodesHTML += `
+                <div class="node-item">
+                    <div class="node-info">
+                        <div class="node-status-indicator"></div>
+                        <span class="node-name">${nodeName}</span>
+                    </div>
+                    <span class="node-latency">${latency}ms</span>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="tooltip-header">Active Nodes - ${locationName}</div>
+            <div class="node-list">
+                ${nodesHTML}
+            </div>
+        `;
+    }
+
+    // Add tooltip to each location item
+    const locationItems = document.querySelectorAll('.location-item');
+    
+    locationItems.forEach(item => {
+        const locationName = item.querySelector('.location-name').textContent;
+        
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'location-tooltip';
+        tooltip.innerHTML = createTooltipContent(locationName);
+        item.appendChild(tooltip);
+        
+        // Add hover event listeners
+        item.addEventListener('mouseenter', function(e) {
+            tooltip.style.display = 'block';
+            
+            // Position tooltip
+            const rect = item.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            
+            // Default position to the right
+            let left = rect.right + 10;
+            let top = rect.top;
+            
+            // Check if tooltip goes off-screen horizontally
+            if (left + tooltipRect.width > window.innerWidth) {
+                left = rect.left - tooltipRect.width - 10;
+            }
+            
+            // Check if tooltip goes off-screen vertically
+            if (top + tooltipRect.height > window.innerHeight) {
+                top = window.innerHeight - tooltipRect.height - 10;
+            }
+            
+            // Ensure tooltip doesn't go above viewport
+            if (top < 0) {
+                top = 10;
+            }
+            
+            tooltip.style.position = 'fixed';
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            tooltip.style.display = 'none';
+        });
+        
+        // Update tooltip position on mouse move
+        item.addEventListener('mousemove', function(e) {
+            if (tooltip.style.display === 'block') {
+                const rect = item.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                
+                let left = rect.right + 10;
+                let top = e.clientY - tooltipRect.height / 2;
+                
+                // Check boundaries
+                if (left + tooltipRect.width > window.innerWidth) {
+                    left = rect.left - tooltipRect.width - 10;
+                }
+                
+                if (top + tooltipRect.height > window.innerHeight) {
+                    top = window.innerHeight - tooltipRect.height - 10;
+                }
+                
+                if (top < 0) {
+                    top = 10;
+                }
+                
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+            }
+        });
+    });
+});
 </script>
 </body>
 </html>
